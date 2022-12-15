@@ -11,6 +11,7 @@ matplotlib = "*"
 plotly = "*"
 opencv-python = "*"
 stqdm = "*"
+watchdog = "*"
 
 [dev-packages]
 ipykernel = "*"
