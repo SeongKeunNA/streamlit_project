@@ -13,8 +13,11 @@ def get_data_folders(dir_path: str) -> list:
     Args:
         dir_path (str): root folder name
     """
-    img_paths = os.listdir(dir_path)  # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
-    return img_paths
+    dir_names = []
+    for dir_name in os.listdir(dir_path):   # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
+        if not dir_name.startswith('.'):    # hidden file들은 제외합니다
+            dir_names.append(dir_name)
+    return dir_names
 
 
 def show_img(img: np.ndarray) -> None:
