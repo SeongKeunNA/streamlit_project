@@ -3,7 +3,7 @@
 ### TODO
 - [ ] data viewer
   - [ ] page function
-  - [ ] radio select
+  - [x] radio select
   - [ ] input page number
 - [ ] annotation viewer(segmentation)
   - [ ] choose class
