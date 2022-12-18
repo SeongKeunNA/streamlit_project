@@ -17,11 +17,17 @@ import sys
 from stqdm import stqdm
 from collections import Counter
 
+LABEL_COLORS = [
+    px.colors.label_rgb(px.colors.convert_to_RGB_255(x))
+    for x in sns.color_palette("Spectral", 10)
+]
+LABEL_COLORS_WOUT_NO_FINDING = LABEL_COLORS[:8] + LABEL_COLORS[9:]
+
 def set_data(dir:str) -> pd.DataFrame:
     """데이터 설정
 
     Args:
-        dir (str): 데이터셋 경로
+        dir (str): json 파일 경로
 
     Returns:
         pd.DataFrame: coco format의 annotations들을 하나의 행으로 하는 데이터프레임
@@ -37,19 +43,20 @@ def set_data(dir:str) -> pd.DataFrame:
     segmentations = []
     areas = []
     sizes = []
-
+    segmentations_ids = []
+    
     for image_id in coco.getImgIds():
 
         image_info = coco.loadImgs(image_id)[0]
         ann_ids = coco.getAnnIds(imgIds=image_info["id"])
         anns = coco.loadAnns(ann_ids)
-
         file_name = image_info["file_name"]
         for ann in anns:
             image_ids.append(file_name)
             category_ids.append(ann["category_id"])
             category_names.append(coco.loadCats(ann["category_id"])[0]["name"])
             segmentations.append(ann['segmentation'])
+            segmentations_ids.append(ann["id"])
             areas.append(ann["area"])
             sizes.append(image_info["width"] * image_info["height"])
             
@@ -60,6 +67,7 @@ def set_data(dir:str) -> pd.DataFrame:
     df["segmentation"] = segmentations
     df["area"] = areas
     df["size"] = sizes
+    df["segmentation_id"] = segmentations_ids
     return df
     
 def show_distribution(dir:str, category:str):
@@ -122,9 +130,16 @@ def make_prop_dist_figs(dir, df):
     with open(f"utils/distribution_plotly/{dir}_proportion distribution", "wb") as fw:    
          pickle.dump(fig_list, fw)
         
-
+def get_segmentations(img_group : pd.DataFrame) -> List[list]:
+    segmentations = []
+    for _, row in img_group.iterrows():
+        s_id, seg = row.segmentation_id, row.segmentation[0]
+        segmentations.append([s_id, seg])
+    return segmentations
+        
+    
 def make_color_dist_figs(dir, df: pd.DataFrame):
-    """bbox 내의 color distribution의 box plot 계산 및 저장
+    """color distribution의 box plot 계산 및 저장
     Args:
         df: coco dataset의 annotations를 각 행으로 하는 데이터 프레임
     """
@@ -135,19 +150,30 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
     color_ann_cumulation = {color: [0] * len_df for color in color_list}
 
     for img_path in stqdm(img_paths):
-        img_bgr = cv2.imread(os.path.join("../dataset/", img_path))
+        img_bgr = cv2.imread(os.path.join(f"data/{dir}/images", img_path))
         img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-        bboxes = get_bbox(group.get_group(img_path))
-        for bbox in bboxes:
-            b_id, c_id, x_min, y_min, x_max, y_max = map(int, bbox)
-            cropped_rgb = img_rgb[y_min:y_max, x_min:x_max]
-            rgb_mean = np.mean(cropped_rgb, axis=(0, 1))
-            cropped_hsv = img_hsv[y_min:y_max, x_min:x_max]
-            hsv_mean = np.mean(cropped_hsv, axis=(0, 1))
-            color_mean = np.concatenate((rgb_mean, hsv_mean))
-            for i, color in enumerate(color_list):
-                color_ann_cumulation[color][b_id] = color_mean[i]
+        semgnentations = get_segmentations(group.get_group(img_path))
+        rgb = []
+        hsv = []
+        for s_id, seg in semgnentations:
+            len_seg = len(seg)
+            for i in range(0, len_seg, 2):
+                x, y = map(round, seg[i:i+2])
+                rgb.append(img_rgb[y, x, :])
+                hsv.append(img_hsv[y, x, :])
+
+        rgb_mean = np.mean(rgb, axis = 0)
+        hsv_mean = np.mean(hsv, axis = 0)
+        color_mean = np.concatenate((rgb_mean, hsv_mean))
+        for i, color in enumerate(color_list):
+            try:
+                color_ann_cumulation[color][s_id] = color_mean[i]
+            except:
+                print(s_id)
+                print(len_df)
+                return
+
 
     for color in color_list:
         df[color] = color_ann_cumulation[color]
@@ -172,13 +198,22 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
             yaxis_title="<b> " + color + " </b>",
         )
         fig_list.append(fig)
-
     with open(f"utils/distribution_plotly/{dir}_Color distribution", "wb") as fw:    
         pickle.dump(fig_list, fw)
         
-def make_class_dist_figs(dir, df):
-    return
+def make_class_dist_figs(dir:str, df:pd.DataFrame):
+    """category의 distribution의 box plot 계산 및 저장
+
+    Args:
+        dir (str): _description_
+        df (pd.DataFrame): _description_
+    """
+    print(len(df.category_name.unique()))
+    figs = [px.histogram(df, x="category_name")] 
+    with open(f"utils/distribution_plotly/{dir}_Class distribution", "wb") as fw:    
+         pickle.dump(figs, fw)
 
 
 def make_class_num_dist_figs(dir, df):
     return
+    
