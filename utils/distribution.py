@@ -110,7 +110,7 @@ def make_dist_figs(dir:str, category:str):
     elif category == "Class distribution":
         make_class_dist_figs(dir, df)
     elif category == "Class number distribution per image":
-        make_class_num_dist_figs(dir, df)
+        make_class_per_img_dist_figs(dir, df)
     
 
 def make_prop_dist_figs(dir, df):
@@ -208,12 +208,11 @@ def make_class_dist_figs(dir:str, df:pd.DataFrame):
         dir (str): _description_
         df (pd.DataFrame): _description_
     """
-    print(len(df.category_name.unique()))
     figs = [px.histogram(df, x="category_name")] 
     with open(f"utils/distribution_plotly/{dir}_Class distribution", "wb") as fw:    
          pickle.dump(figs, fw)
 
 
-def make_class_num_dist_figs(dir, df):
+def make_class_per_img_dist_figs(dir, df):
     return
     
