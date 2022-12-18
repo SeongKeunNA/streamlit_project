@@ -78,8 +78,8 @@ def show_distribution(dir:str, category:str):
         category (str): distribution을 확인하려는 카테고리
     """
     
-    if f"{dir}_{category}" not in os.listdir("utils/distribution_plotly") or st.button("refresh"):
-        make_dist_figs(dir, category)
+    #if f"{dir}_{category}" not in os.listdir("utils/distribution_plotly") or st.button("refresh"):
+    #    make_dist_figs(dir, category)
     display_plotly_figs(f"utils/distribution_plotly/{dir}_{category}")
     
         
@@ -109,11 +109,17 @@ def make_dist_figs(dir:str, category:str):
         make_color_dist_figs(dir, df)
     elif category == "Class distribution":
         make_class_dist_figs(dir, df)
-    elif category == "Class number distribution per image":
+    elif category == "Class per image distribution":
         make_class_per_img_dist_figs(dir, df)
     
 
-def make_prop_dist_figs(dir, df):
+def make_prop_dist_figs(dir:str, df:pd.DataFrame):
+    """annotation proportion distribution 계산 및 저장
+
+    Args:
+        dir (str): distribution을 확인하려는 폴더 경로
+        df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
+    """
     areas = dict()
     fig_list = []
     for row in df.itertuples():   
@@ -141,7 +147,8 @@ def get_segmentations(img_group : pd.DataFrame) -> List[list]:
 def make_color_dist_figs(dir, df: pd.DataFrame):
     """color distribution의 box plot 계산 및 저장
     Args:
-        df: coco dataset의 annotations를 각 행으로 하는 데이터 프레임
+        dir (str): distribution을 확인하려는 폴더 경로
+        df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
     """
     color_list = ["r_mean", "g_mean", "b_mean", "h_mean", "s_mean", "v_mean"]
     group = df.groupby("image_id")
@@ -202,17 +209,29 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
         pickle.dump(fig_list, fw)
         
 def make_class_dist_figs(dir:str, df:pd.DataFrame):
-    """category의 distribution의 box plot 계산 및 저장
+    """category distribution 계산 및 저장
 
     Args:
-        dir (str): _description_
-        df (pd.DataFrame): _description_
+        dir (str): distribution을 확인하려는 폴더 경로
+        df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
     """
     figs = [px.histogram(df, x="category_name")] 
     with open(f"utils/distribution_plotly/{dir}_Class distribution", "wb") as fw:    
          pickle.dump(figs, fw)
 
 
-def make_class_per_img_dist_figs(dir, df):
-    return
-    
+def make_class_per_img_dist_figs(dir:str, df:pd.DataFrame):
+    """이미지 별 annotation 개수의 distribution 계산 및 저장
+
+    Args:
+        dir (str): distribution을 확인하려는 폴더 경로
+        df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
+    """
+    ann_nums_dict= dict(df["image_id"].value_counts())
+    ann_nums_df = pd.DataFrame(pd.Series(ann_nums_dict)) 
+    figs = []
+    fig = px.histogram(pd.DataFrame(ann_nums_df))
+    fig.update_layout(showlegend=False)
+    figs.append(fig)
+    with open(f"utils/distribution_plotly/{dir}_Class per image distribution", "wb") as fw:    
+         pickle.dump(figs, fw)
