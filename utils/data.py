@@ -85,4 +85,4 @@ def move_page(page: int):
         st.session_state.page = page
     except:
         raise ValueError('page에 int가 아닌 값이 들어왔거나 page변수가 존재하지 않습니다.')
-    
+
