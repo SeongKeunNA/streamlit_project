@@ -27,7 +27,7 @@ def show_img(img: np.ndarray) -> None:
     
 
 @st.cache()
-def get_img_paths(coco_path: str) -> list[str]:
+def get_img_paths(coco_path: str) -> list[str]: # example dataset
     """img path 반환
 
     Args:
@@ -36,12 +36,13 @@ def get_img_paths(coco_path: str) -> list[str]:
     Returns:
         list[str]: 이미지 경로 리스트로 반환
     """
-    json_path = os.path.join(glob(f'{coco_path}/*.json')[0])
+    json_path = os.path.join(coco_path, glob(f'{coco_path}/*.json')[0])
     data = COCO(json_path)
     img_paths = []
     for img_info in data.loadImgs(data.getImgIds()):
         img_paths.append(os.path.join(coco_path, 'images', img_info['file_name']))
-
+        
+        
     return sorted(img_paths)
 
 
@@ -83,3 +84,22 @@ def move_page(page: int):
     except:
         raise ValueError('page에 int가 아닌 값이 들어왔거나 page변수가 존재하지 않습니다.')
     
+
+@st.cache()
+def get_img_paths(coco_path: str, mode: str) -> list[str]:
+    """img path 반환
+
+    Args:
+        coco_path (str): coco json 파일 경로
+        mode (str): train, val, test 데이터셋 여부
+
+    Returns:
+        list[str]: 이미지 경로 리스트로 반환
+    """
+    
+    json_path = os.path.join(coco_path, f'{mode}.json')
+    data = COCO(json_path)
+    img_paths = []
+    for img_info in data.loadImgs(data.getImgIds()):
+        img_paths.append(os.path.join(coco_path, img_info['file_name']))
+    return img_paths

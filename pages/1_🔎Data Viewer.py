@@ -6,10 +6,10 @@ from time import time
 
 from utils.data import *
 
-ROOTDIR = "data"
+ROOTDIR = "data/trash"
 ELEMENTS_PER_PAGE = 10
 
-st.set_page_config(page_title="Data Viewer", page_icon="📊")
+st.set_page_config(page_title="Data Viewer", page_icon="🔎")
 set_session()
 
 st.title("Data Viewer")
@@ -17,10 +17,10 @@ st.title("Data Viewer")
 with st.sidebar:
     
     selected_dir = st.selectbox(
-        label="select folder", options=get_data_folders(ROOTDIR)
+        label="select dataset", options=['train', 'val', 'test']
     )
     
-    img_paths = get_img_paths(os.path.join(ROOTDIR, selected_dir))
+    img_paths = get_img_paths(ROOTDIR, selected_dir)
     
     img_path = st.radio(
         label="사진 선택",
@@ -32,6 +32,7 @@ with st.sidebar:
     st.button(label='이동', on_click=move_page, args=([page2move - 1]))
 
 start_time = time()
+print(img_path)
 img = cv2.imread(img_path)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 show_img(img)
