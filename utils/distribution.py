@@ -133,7 +133,7 @@ def make_prop_dist_figs(dir:str, df:pd.DataFrame):
         fig.update_layout(showlegend=False)
         fig_list.append(fig)
         
-    with open(f"utils/distribution_plotly/{dir}_proportion distribution", "wb") as fw:    
+    with open(f"utils/distribution_plotly/{dir}_Segmentation proportion distribution", "wb") as fw:    
          pickle.dump(fig_list, fw)
         
 def get_segmentations(img_group : pd.DataFrame) -> List[list]:
@@ -220,7 +220,7 @@ def make_class_dist_figs(dir:str, df:pd.DataFrame):
         df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
     """
     figs = [px.histogram(df, x="category_name")] 
-    with open(f"utils/distribution_plotly/{dir}_Class distribution", "wb") as fw:    
+    with open(f"utils/distribution_plotly/{dir}_Class number distribution", "wb") as fw:    
          pickle.dump(figs, fw)
 
 
@@ -237,5 +237,5 @@ def make_class_per_img_dist_figs(dir:str, df:pd.DataFrame):
     fig = px.histogram(pd.DataFrame(ann_nums_df))
     fig.update_layout(showlegend=False)
     figs.append(fig)
-    with open(f"utils/distribution_plotly/{dir}_Class per image distribution", "wb") as fw:    
+    with open(f"utils/distribution_plotly/{dir}_Class number per image distribution", "wb") as fw:    
          pickle.dump(figs, fw)
