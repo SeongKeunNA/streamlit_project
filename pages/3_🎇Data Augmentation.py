@@ -7,11 +7,11 @@ from time import time
 from utils.data import *
 from utils.aug import *
 
-ROOTDIR = "data"
+ROOTDIR = "data/trash"
 ELEMENTS_PER_PAGE = 10
 WIDTH_ORIGINAL = 400
 
-st.set_page_config(page_title="Data Augmentation", page_icon="🎇")
+st.set_page_config(page_title="Data Augmentation", page_icon="🎇", layout="wide")
 set_session()
 
 st.title("Data Augmentation")
@@ -19,10 +19,10 @@ st.title("Data Augmentation")
 with st.sidebar:
     
     selected_dir = st.selectbox(
-        label="select folder", options=get_data_folders(ROOTDIR), label_visibility="hidden"
+        label="select dataset", options=['train', 'val', 'test']
     )
     
-    img_paths = get_img_paths(os.path.join(ROOTDIR, selected_dir))
+    img_paths = get_img_paths(ROOTDIR, selected_dir)
     
     img_path = st.radio(
         label="사진 선택",
@@ -73,12 +73,14 @@ if error == 0:
     col1, col2 = st.columns(2)
     with col1:
         st.image(img, caption="Original image", width=WIDTH_ORIGINAL)
+        st.write(img.shape)
     with col2:
         st.image(
             augmented_image,
             caption="Transformed image",
             width=width_transformed,
         )
+        st.write(augmented_image.shape)
     end_time = time()
 
     st.write(f"loading time: {end_time - start_time:.3f}")
