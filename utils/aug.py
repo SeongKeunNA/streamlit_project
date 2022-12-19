@@ -174,7 +174,7 @@ def replace_none(string):
 
 def select_radio(param_name, options_list, n_for_hash, **kwargs):
     st.sidebar.subheader(param_name)
-    result = st.sidebar.radio("", options_list, key=hash(param_name + str(n_for_hash)))
+    result = st.sidebar.radio(param_name, options_list, key=hash(param_name + str(n_for_hash)))
     return replace_none(result)
 
 
