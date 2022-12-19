@@ -79,7 +79,7 @@ def show_distribution(dir:str, category:str):
     """
     
     #if f"{dir}_{category}" not in os.listdir("utils/distribution_plotly") or st.button("refresh"):
-    #    make_dist_figs(dir, category)
+    #make_dist_figs(dir, category)
     display_plotly_figs(f"utils/distribution_plotly/{dir}_{category}")
     
         
@@ -101,7 +101,7 @@ def make_dist_figs(dir:str, category:str):
         dir (str): distribution을 확인하려는 폴더 경로
         category (str): distribution을 확인하려는 카테고리
     """
-    json_path = os.path.join(glob(f'data/{dir}/*.json')[0])
+    json_path = f"data/{dir}/train_all.json"
     df = set_data(json_path)
     if category == "Proportion distribution":
         make_prop_dist_figs(dir, df)
@@ -157,7 +157,7 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
     color_ann_cumulation = {color: [0] * len_df for color in color_list}
 
     for img_path in stqdm(img_paths):
-        img_bgr = cv2.imread(os.path.join(f"data/{dir}/images", img_path))
+        img_bgr = cv2.imread(os.path.join(f"data/{dir}/", img_path))
         img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
         semgnentations = get_segmentations(group.get_group(img_path))
@@ -167,6 +167,10 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
             len_seg = len(seg)
             for i in range(0, len_seg, 2):
                 x, y = map(round, seg[i:i+2])
+                if x > 512:
+                    x = 512
+                elif y > 512:
+                    y = 512
                 rgb.append(img_rgb[y, x, :])
                 hsv.append(img_hsv[y, x, :])
 
@@ -179,7 +183,7 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
             except:
                 print(s_id)
                 print(len_df)
-                return
+                break
 
 
     for color in color_list:
@@ -188,13 +192,13 @@ def make_color_dist_figs(dir, df: pd.DataFrame):
     fig_list = []
     for color in color_list:
         fig = px.box(
-            df.sort_values(by="class_name"),
-            x="class_name",
+            df.sort_values(by="category_name"),
+            x="category_name",
             y=color,
-            color="class_name",
+            color="category_name",
             color_discrete_sequence=LABEL_COLORS_WOUT_NO_FINDING,
             notched=True,
-            labels={"class_name": "Class Name", "frac_bbox_area": "BBox Area (%)"},
+            labels={"category_name": "Category Name", "frac_bbox_area": "BBox Area (%)"},
             title="<b>Class 별 이미지 내 Bbox 의 " + color + " 분포 </b>",
         )
         fig.update_layout(
