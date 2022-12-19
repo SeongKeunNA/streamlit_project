@@ -103,13 +103,13 @@ def make_dist_figs(dir:str, category:str):
     """
     json_path = f"data/{dir}/train_all.json"
     df = set_data(json_path)
-    if category == "Proportion distribution":
+    if category == "Segmentation proportion distribution":
         make_prop_dist_figs(dir, df)
     elif category == "Color distribution":
         make_color_dist_figs(dir, df)
-    elif category == "Class distribution":
+    elif category == "Class number distribution":
         make_class_dist_figs(dir, df)
-    elif category == "Class per image distribution":
+    elif category == "Class number per image distribution":
         make_class_per_img_dist_figs(dir, df)
     
 
