@@ -14,7 +14,6 @@ ROOTDIR = "data"
 # 4. 클래스 픽셀의 컬러 정보 분포
 
 st.set_page_config(page_title="Data Distrubution") #,page_icon="📊")
-set_session()
 
 st.title("Data Distribution")
 
