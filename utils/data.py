@@ -13,8 +13,11 @@ def get_data_folders(dir_path: str) -> list:
     Args:
         dir_path (str): root folder name
     """
-    img_paths = os.listdir(dir_path)  # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
-    return img_paths
+    dir_names = []
+    for dir_name in os.listdir(dir_path):   # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
+        if not dir_name.startswith('.'):    # hidden file들은 제외합니다
+            dir_names.append(dir_name)
+    return dir_names
 
 
 def show_img(img: np.ndarray) -> None:
@@ -63,6 +66,7 @@ def move_page(page: int):
         st.session_state.page = page
     except:
         raise ValueError('page에 int가 아닌 값이 들어왔거나 page변수가 존재하지 않습니다.')
+
 
 @st.experimental_memo
 def get_img_paths(coco_path: str, mode: str) -> list:
