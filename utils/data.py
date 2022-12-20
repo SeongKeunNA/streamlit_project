@@ -5,18 +5,20 @@ import json
 import numpy as np
 import streamlit as st
 from pycocotools.coco import COCO
+import matplotlib.pyplot as plt
+import cv2
 
 CLASS_COLOR = [
-    [1, 222/255, 1],
-    [222/255, 222/255, 1],
-    [1, 1, 222/255],
+    [1., 222/255, 1.],
+    [222/255, 222/255, 1.],
+    [1., 1., 222/255],
     [222/255, 222/255, 239/255],
-    [222/255, 1, 1],
+    [222/255, 1., 1.],
     [1., 222/255, 222/255],
     [239/255, 222/255, 222/255],
     [239/255, 222/255, 1.],
     [222/255, 239/255, 239/255],
-    [222/255, 1, 222/255],
+    [222/255, 1., 222/255],
 ]
 
 def get_data_folders(dir_path: str) -> list:
@@ -128,6 +130,13 @@ def get_labeld_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
 
 
 @st.experimental_singleton
-def get_overlay_img(img: np.ndarray, img_id: int, data: COCO) -> np.ndarray:
-    
-    pass
+def get_overlay_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
+    label = np.zeros_like(img)
+    data = _get_coco_data(coco_path, mode)
+    annos = data.getAnnIds(imgIds=img_id)
+    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x['area'])
+    for idx in range(len(segmentations)):
+        label[data.annToMask(segmentations[idx]) == 1] = np.array(np.array(CLASS_COLOR[segmentations[idx]['category_id']])*255, dtype=np.uint8)
+    label = cv2.addWeighted(img, 0.5, label, 0.5, 0)
+    return label
+

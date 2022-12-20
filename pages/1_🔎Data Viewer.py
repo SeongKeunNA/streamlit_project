@@ -47,7 +47,7 @@ with col1:
 with col2:
     show_img(get_labeld_img(img, img_id, ROOTDIR, selected_mode))
 with col3:
-    show_img(img)
+    show_img(get_overlay_img(img, img_id, ROOTDIR, selected_mode))
 end_time = time()
 
 st.write(f"loading time: {end_time - start_time:.3f}")
