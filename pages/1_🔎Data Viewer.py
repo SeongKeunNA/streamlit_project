@@ -9,7 +9,7 @@ from utils.data import *
 ROOTDIR = "data/trash"
 ELEMENTS_PER_PAGE = 10
 
-st.set_page_config(page_title="Data Viewer", page_icon="🔎")
+st.set_page_config(page_title="Data Viewer", page_icon="🔎", layout='wide')
 set_session()
 
 st.title("Data Viewer")
@@ -41,9 +41,13 @@ with st.sidebar:
 start_time = time()
 img = cv2.imread(img_path)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-if selected_mode != 'test':
-    pass
-show_img(img)
+col1, col2, col3 = st.columns(3)
+with col1:
+    show_img(img)
+with col2:
+    show_img(get_labeld_img(img, img_id, ROOTDIR, selected_mode))
+with col3:
+    show_img(img)
 end_time = time()
 
 st.write(f"loading time: {end_time - start_time:.3f}")

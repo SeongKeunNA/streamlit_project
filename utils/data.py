@@ -6,6 +6,18 @@ import numpy as np
 import streamlit as st
 from pycocotools.coco import COCO
 
+CLASS_COLOR = [
+    [1, 222/255, 1],
+    [222/255, 222/255, 1],
+    [1, 1, 222/255],
+    [222/255, 222/255, 239/255],
+    [222/255, 1, 1],
+    [1., 222/255, 222/255],
+    [239/255, 222/255, 222/255],
+    [239/255, 222/255, 1.],
+    [222/255, 239/255, 239/255],
+    [222/255, 1, 222/255],
+]
 
 def get_data_folders(dir_path: str) -> list:
     """root 하위 폴더 리스트 반환
@@ -86,7 +98,7 @@ def get_img_paths(coco_path: str, mode: str) -> list:
         img_ids_paths.append((img_info['id'], os.path.join(coco_path, img_info['file_name'])))
     return img_ids_paths
 
-
+@st.experimental_singleton
 def _get_coco_data(coco_path: str, mode: str) -> COCO:
     """json path로 COCO 클래스 생성
 
@@ -102,7 +114,20 @@ def _get_coco_data(coco_path: str, mode: str) -> COCO:
     data = COCO(json_path)
     return data
     
+    
+@st.experimental_singleton
+def get_labeld_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
+    label = np.zeros(img.shape)
+    data = _get_coco_data(coco_path, mode)
+    annos = data.getAnnIds(imgIds=img_id)
+    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x['area'])
+    for idx in range(len(segmentations)):
+        label[data.annToMask(segmentations[idx]) == 1] = CLASS_COLOR[segmentations[idx]['category_id']]
+    return label
 
-def get_labeld_img(img: np.ndarray, img_id: int, data: COCO) -> np.ndarray:
+
+
+@st.experimental_singleton
+def get_overlay_img(img: np.ndarray, img_id: int, data: COCO) -> np.ndarray:
     
     pass
