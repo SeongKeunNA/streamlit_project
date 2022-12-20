@@ -41,6 +41,7 @@ with st.sidebar:
         min_value=1,
         max_value=ceil(len(img_ids_paths) / ELEMENTS_PER_PAGE),
     )
+    
     st.button(label="이동", on_click=move_page, args=([page2move - 1]))
 
 start_time = time()

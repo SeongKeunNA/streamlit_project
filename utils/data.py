@@ -54,7 +54,6 @@ def get_current_page_list(
     Returns:
         list[str]: 페이지에 해당하는 이미지 경로가 들어있는 리스트
     """
-    print(page)
     first_idx = page * ele_per_page
     last_idx = (page + 1) * ele_per_page
     page_list = img_paths[first_idx:last_idx]
