@@ -7,11 +7,6 @@ from utils.data import *
 from utils.distribution import *
 
 ROOTDIR = "data"
-# TODO 
-# 1. 클래스 개수의 분포
-# 2. 이미지 당 클래스 개수의 분포
-# 3. 클래스 별 전체 영역 대비 픽셀 비율 분포
-# 4. 클래스 픽셀의 컬러 정보 분포
 
 st.set_page_config(page_title="Data Distrubution") #,page_icon="📊")
 
@@ -23,7 +18,7 @@ with st.sidebar:
     )
         
     selected_category = st.selectbox(
-        label="select category", options=["Proportion distribution", "Color distribution", "Class distribution", "Class per image distribution"]
+        label="select category", options=["Segmentation proportion distribution", "Color distribution", "Class number distribution", "Class number per image distribution"]
     )
     
 start_time = time()
