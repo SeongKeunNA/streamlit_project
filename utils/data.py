@@ -6,10 +6,14 @@ import streamlit as st
 from pycocotools.coco import COCO
 from collections import defaultdict
 import cv2
+import stqdm
+import sys
+import pickle
+import csv
+csv.field_size_limit(sys.maxsize)
 
-
-def get_data_folders(dir_path: str) -> list:
-    """root 하위 폴더 리스트 반환
+def get_listdir(dir_path: str) -> list:
+    """root 하위 파일, 폴더 리스트 반환
 
     Args:
         dir_path (str): root folder name
@@ -179,6 +183,8 @@ def label_to_color_image(label: np.array):
 
     return colormap[label]
 
+# def set_class_checkbox(check: list[bool]):
+
 
 @st.experimental_singleton
 def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
@@ -307,3 +313,45 @@ def make_checkbox(valid_category: list[int]):
                 check = st.checkbox(class_name, value=False)
         return_list[idx] = check
     return return_list
+
+def load_pkl(path: str) -> any:
+    with open(path, 'rb') as f:
+        data = pickle.load(f)
+        st.write(type(data))
+        return data
+
+def save_pkl(path: str, data: any) -> None:
+    cache_file_path = path.split(".")[0] + '.pkl'
+    with open(cache_file_path, 'wb') as f:
+	    pickle.dump(data, f)
+
+def submission_to_dict(submission_path: str) -> dict:
+
+    output_dict = {}
+    size = 256
+    with open(submission_path, mode='r') as file:
+        st.write(submission_path)
+        reader = csv.reader(file)
+        st.write(type(reader))
+        attrs = []
+        for row in reader:
+            if len(attrs) < 1:
+                attrs = row
+                continue
+            filename = row[0]
+            mask = np.array(list(map(int, row[1].split()))).reshape([size, size])
+            output_dict[filename] = mask
+    return output_dict
+
+
+def load_submission_dict(submission_path: str) -> dict:
+    cache_file_path = submission_path.split(".")[0] + '.pkl'
+    if os.path.isfile(cache_file_path):
+        st.write('ho')
+        st.write(cache_file_path)
+        return load_pkl(cache_file_path)
+    else:
+        output_dict = submission_to_dict(submission_path)
+        save_pkl(cache_file_path, output_dict)
+        return load_submission_dict(submission_path)
+        
