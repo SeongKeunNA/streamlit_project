@@ -25,6 +25,14 @@ def get_listdir(dir_path: str) -> list:
     return dir_names
 
 
+def get_submission_csv(dir_path: str) -> list:
+    dir_names = []
+    for dir_name in os.listdir(dir_path):
+        if not dir_name.startswith(".") and dir_name.endswith(".csv"):
+            dir_names.append(dir_name)
+    return dir_names
+
+
 def show_img(img: np.ndarray) -> None:
     """이미지 streamlit에 출력
 
@@ -347,8 +355,6 @@ def submission_to_dict(submission_path: str) -> dict:
 def load_submission_dict(submission_path: str) -> dict:
     cache_file_path = submission_path.split(".")[0] + '.pkl'
     if os.path.isfile(cache_file_path):
-        st.write('ho')
-        st.write(cache_file_path)
         return load_pkl(cache_file_path)
     else:
         output_dict = submission_to_dict(submission_path)

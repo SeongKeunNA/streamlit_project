@@ -22,7 +22,7 @@ with st.sidebar:
     )
 
     if selected_mode == "test":
-        submission_filename = st.selectbox(label="select_submission", options=get_listdir(SUBMISSIONS_ROOT_DIR))
+        submission_filename = st.selectbox(label="select_submission", options=get_submission_csv(SUBMISSIONS_ROOT_DIR))
         
     img_ids_paths = get_img_paths(ROOTDIR, selected_mode)
 
