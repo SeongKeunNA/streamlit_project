@@ -4,13 +4,26 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 from pycocotools.coco import COCO
-from collections import defaultdict
 import cv2
 import stqdm
 import sys
 import pickle
 import csv
 csv.field_size_limit(sys.maxsize)
+
+CLASS_COLOR = [
+    [1., 222/255, 1.],
+    [222/255, 222/255, 1.],
+    [1., 1., 222/255],
+    [222/255, 222/255, 239/255],
+    [222/255, 1., 1.],
+    [1., 222/255, 222/255],
+    [239/255, 222/255, 222/255],
+    [239/255, 222/255, 1.],
+    [222/255, 239/255, 239/255],
+    [222/255, 1., 222/255],
+]
+
 
 def get_listdir(dir_path: str) -> list:
     """root 하위 파일, 폴더 리스트 반환
@@ -65,7 +78,16 @@ def set_session():
     """data app에서 세션 설정"""
     if "page" not in st.session_state:
         st.session_state.page = 0
+    if "mode" not in st.session_state:
+        st.session_state.mode = 'train'
 
+
+def get_mode():
+    return st.session_state.mode
+
+
+def change_mode(mode: str):
+    st.session_state.mode = mode
 
 def move_page(page: int):
     """원하는 페이지로 이동
@@ -102,7 +124,6 @@ def get_img_paths(coco_path: str, mode: str) -> list:
         )
     return img_ids_paths
 
-
 @st.experimental_singleton
 def _get_coco_data(coco_path: str, mode: str) -> COCO:
     """json path로 COCO 클래스 생성
@@ -118,13 +139,36 @@ def _get_coco_data(coco_path: str, mode: str) -> COCO:
     json_path = os.path.join(coco_path, f"{mode}.json")
     data = COCO(json_path)
     return data
+    
+    
+@st.experimental_singleton
+def get_labeld_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
+    label = np.zeros(img.shape)
+    data = _get_coco_data(coco_path, mode)
+    annos = data.getAnnIds(imgIds=img_id)
+    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x['area'])
+    for idx in range(len(segmentations)):
+        label[data.annToMask(segmentations[idx]) == 1] = CLASS_COLOR[segmentations[idx]['category_id']]
+    return label
+
+
+@st.experimental_singleton
+def get_overlay_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
+    label = np.zeros_like(img)
+    data = _get_coco_data(coco_path, mode)
+    annos = data.getAnnIds(imgIds=img_id)
+    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x['area'])
+    for idx in range(len(segmentations)):
+        label[data.annToMask(segmentations[idx]) == 1] = np.array(np.array(CLASS_COLOR[segmentations[idx]['category_id']])*255, dtype=np.uint8)
+    label = cv2.addWeighted(img, 0.5, label, 0.5, 0)
+    return label
 
 
 def get_color_map():
     """read segmentation masking color data
 
     Returns:
-        df:클래스별 r,g,b 값을 갖고있는 데이터 프래임 반환
+        df:클래스별 r,g,b 값을 갖고있는 데이터 프레임 반환
     """
     category_names = (
         "Background",
@@ -160,8 +204,8 @@ def create_trash_label_colormap():
     """
     class_colormap = get_color_map()
     colormap = np.zeros((11, 3), dtype=np.uint8)
-    for inex, (_, r, g, b) in enumerate(class_colormap.values):
-        colormap[inex] = [r, g, b]
+    for index, (_, r, g, b) in enumerate(class_colormap.values):
+        colormap[index] = [r, g, b]
 
     return colormap
 
@@ -209,25 +253,8 @@ def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
     """
     data = _get_coco_data(coco_path, mode)
 
-    category_names = (
-        "Background",
-        "General trash",
-        "Paper",
-        "Paper pack",
-        "Metal",
-        "Glass",
-        "Plastic",
-        "Styrofoam",
-        "Plastic bag",
-        "Battery",
-        "Clothing",
-    )
-
     ann_ids = data.getAnnIds(id)
     anns = data.loadAnns(ann_ids)
-
-    cat_ids = data.getCatIds()
-    cats = data.loadCats(cat_ids)
 
     mask = np.zeros((512, 512))
 
@@ -318,7 +345,7 @@ def make_checkbox(valid_category: list[int]):
             if valid_category[idx] == 1:
                 check = st.checkbox(class_name, value=True)
             else:
-                check = st.checkbox(class_name, value=False)
+                check = st.checkbox(class_name, value=False, disabled=True)
         return_list[idx] = check
     return return_list
 
