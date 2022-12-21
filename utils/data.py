@@ -5,6 +5,11 @@ import numpy as np
 import streamlit as st
 from pycocotools.coco import COCO
 import cv2
+import stqdm
+import sys
+import pickle
+import csv
+csv.field_size_limit(sys.maxsize)
 
 CLASS_COLOR = [
     [1., 222/255, 1.],
@@ -19,8 +24,9 @@ CLASS_COLOR = [
     [222/255, 1., 222/255],
 ]
 
-def get_data_folders(dir_path: str) -> list:
-    """root 하위 폴더 리스트 반환
+
+def get_listdir(dir_path: str) -> list:
+    """root 하위 파일, 폴더 리스트 반환
 
     Args:
         dir_path (str): root folder name
@@ -28,6 +34,14 @@ def get_data_folders(dir_path: str) -> list:
     dir_names = []
     for dir_name in os.listdir(dir_path):  # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
         if not dir_name.startswith("."):  # hidden file들은 제외합니다
+            dir_names.append(dir_name)
+    return dir_names
+
+
+def get_submission_csv(dir_path: str) -> list:
+    dir_names = []
+    for dir_name in os.listdir(dir_path):
+        if not dir_name.startswith(".") and dir_name.endswith(".csv"):
             dir_names.append(dir_name)
     return dir_names
 
@@ -221,6 +235,20 @@ def label_to_color_image(label: np.array):
 
     return colormap[label]
 
+# def set_class_checkbox(check: list[bool]):
+
+def get_submission_img(mask: np.ndarray, check: list[bool]) -> np.ndarray:
+    '''check에서 선택된 category만 mask image로 변환하여 리턴
+    Args:
+        mask (np.ndarray): mask data
+        check (list): mask image로 변환할 category
+    Return:
+        mask_image (np.ndarray): 선택된 category만 표현한 mask image
+    '''
+    for idx, i in enumerate(check):
+        if i == False:
+            mask[mask==idx] = 0
+    return label_to_color_image(mask)
 
 @st.experimental_singleton
 def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
@@ -252,9 +280,25 @@ def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
     mask = label_to_color_image(mask)
     return mask
 
+def get_submission_category(mask: np.ndarray) -> list:
+    '''submission mask data에 포함된 category list
+    Args:
+        mask (np.ndarray): mask data
+        category (list): mask data에 포함된 category list
+    Return:
+        output_dict (dict): test image별 mask data를 포함한 dict
+    '''
+    cat_available = np.unique(mask)
+    category = [0] * 11
+    for i in cat_available:
+        category[i] = 1
+    category[0] = 0
+    return category
+
+
 
 @st.experimental_singleton
-def get_coco_category(coco_path: str, mode: str, id: int):
+def get_coco_category(coco_path: str, mode: str, id: int) -> list:
     """선택된 이미지에(베이스 이미지) 대하여 활성화 되어있는 category를 구함
 
     Args:
@@ -332,3 +376,53 @@ def make_checkbox(valid_category: list[int]):
                 check = st.checkbox(class_name, value=False, disabled=True)
         return_list[idx] = check
     return return_list
+
+def load_pkl(path: str) -> any:
+    with open(path, 'rb') as f:
+        data = pickle.load(f)
+        return data
+
+def save_pkl(path: str, data: any) -> None:
+    cache_file_path = path.split(".")[0] + '.pkl'
+    with open(cache_file_path, 'wb') as f:
+	    pickle.dump(data, f)
+
+def submission_to_dict(submission_path: str) -> dict:
+    '''submission.csv를 dict로 변환
+    Args:
+        submission_path (str): submission.csv file path
+    Return:
+        output_dict (dict): test image별 mask data를 포함한 dict
+    '''
+    output_dict = {}
+    size = 256
+    with open(submission_path, mode='r') as file:
+        st.write(submission_path)
+        reader = csv.reader(file)
+        st.write(type(reader))
+        attrs = []
+        for row in stqdm(reader):
+            if len(attrs) < 1:
+                attrs = row
+                continue
+            filename = row[0]
+            mask = np.array(list(map(int, row[1].split()))).reshape([size, size])
+            output_dict[filename] = mask
+    return output_dict
+
+
+def load_submission_dict(submission_path: str) -> dict:
+    '''submission.csv에 포함된 mask data를 dict로 load, 최초 실행 시 dict를 pkl로 변환, 이후는 pkl load
+    Args:
+        submission_path (str): submission.csv file path
+    Return:
+        output_dict (dict): test image별 mask data를 포함한 dict
+    '''
+    cache_file_path = submission_path.split(".")[0] + '.pkl'
+    if os.path.isfile(cache_file_path):
+        return load_pkl(cache_file_path)
+    else:
+        output_dict = submission_to_dict(submission_path)
+        save_pkl(cache_file_path, output_dict)
+        return load_submission_dict(submission_path)
+        
