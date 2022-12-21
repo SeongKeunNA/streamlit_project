@@ -8,6 +8,7 @@ from utils.data import *
 from utils.aug import *
 
 ROOTDIR = "data/trash"
+SUBMISSIONS_ROOT_DIR = os.path.join(ROOTDIR, "submissions")
 ELEMENTS_PER_PAGE = 10
 
 st.set_page_config(page_title="Data Viewer", page_icon="🔎")
@@ -24,6 +25,10 @@ with st.sidebar:
         change_mode(selected_mode)
         st.session_state.page = 0
     
+    if selected_mode == "test":
+        submission_filename = st.selectbox(label="select_submission", options=get_submission_csv(SUBMISSIONS_ROOT_DIR))
+        
+
     img_ids_paths = get_img_paths(ROOTDIR, selected_mode)
     
     img_id_path = st.radio(
@@ -46,13 +51,21 @@ with st.sidebar:
 
 start_time = time()
 
-valid_category = get_coco_category(ROOTDIR, selected_mode, img_id)
-check = make_checkbox(valid_category)
-
-mask_img = get_coco_img(ROOTDIR, selected_mode, img_id, check)
-
 base_img = cv2.imread(img_path)
 base_img = cv2.cvtColor(base_img, cv2.COLOR_BGR2RGB)
+
+if selected_mode == "test":
+    base_img = cv2.resize(base_img, (256,256))
+    submission_path = os.path.join(SUBMISSIONS_ROOT_DIR, submission_filename)
+    mask_dict = load_submission_dict(submission_path)
+    submission_index = "/".join(img_path.split("/")[2:])
+    valid_category = get_submission_category(mask_dict[submission_index])
+    check = make_checkbox(valid_category)
+    mask_img = get_submission_img(mask_dict[submission_index], check)
+else:
+    valid_category = get_coco_category(ROOTDIR, selected_mode, img_id)
+    check = make_checkbox(valid_category)
+    mask_img = get_coco_img(ROOTDIR, selected_mode, img_id, check)
 
 overlay_img = overlay_image(base_img, mask_img)
 
