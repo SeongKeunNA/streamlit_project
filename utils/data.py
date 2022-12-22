@@ -5,7 +5,6 @@ import numpy as np
 import streamlit as st
 from pycocotools.coco import COCO
 import cv2
-import stqdm
 import sys
 import pickle
 import csv
@@ -397,11 +396,9 @@ def submission_to_dict(submission_path: str) -> dict:
     output_dict = {}
     size = 256
     with open(submission_path, mode='r') as file:
-        st.write(submission_path)
         reader = csv.reader(file)
-        st.write(type(reader))
         attrs = []
-        for row in stqdm(reader):
+        for row in reader:
             if len(attrs) < 1:
                 attrs = row
                 continue
