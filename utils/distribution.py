@@ -120,14 +120,29 @@ def make_prop_dist_figs(dir:str, df:pd.DataFrame):
         dir (str): distribution을 확인하려는 폴더 경로
         df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
     """
+    
+    df = df.sort_values(["image_id", "category_id"])
     areas = dict()
     fig_list = []
-    for row in df.itertuples():   
-        if row[3] in areas.keys():
-            areas[row[3]].append(row[5] / row[6] * 100)
-        else:
-            areas[row[3]] = [row[5] / row[6] * 100]
+    last_image_id = df.iloc[0,1]
+    last_category_name = df.iloc[0,2]
+    size = 0
     
+    for row in df.itertuples():
+        now_size = row.area
+        if row.image_id == last_image_id and row.category_name == last_category_name:
+            size += now_size
+        else:    
+            if last_category_name in areas.keys():
+                areas[last_category_name].append(size / (512**2) * 100)
+            else:
+                areas[last_category_name] = [size / (512**2) * 100]
+            size = 0
+            last_image_id = row.image_id
+            last_category_name = row.category_name
+    if size != 0:
+        areas[row.category_name].append(size / (512**2) * 100)
+        
     for area in areas.keys():
         fig = px.histogram(areas[area], labels = {"value" : "proportion(%)"}, title = area)
         fig.update_layout(
@@ -142,7 +157,7 @@ def make_prop_dist_figs(dir:str, df:pd.DataFrame):
             )
         ),
         xaxis_title=dict(
-            text="<b>Segmentation proportion(%)</b>"
+            text="<b>Total segmentation proportion per image(%)</b>"
         ),
         yaxis_title="<b>Count</b>",
         font=dict(
