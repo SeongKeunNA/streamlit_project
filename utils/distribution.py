@@ -127,7 +127,6 @@ def make_prop_dist_figs(dir:str, df:pd.DataFrame):
     last_image_id = df.iloc[0,1]
     last_category_name = df.iloc[0,2]
     size = 0
-    
     for row in df.itertuples():
         now_size = row.area
         if row.image_id == last_image_id and row.category_name == last_category_name:
@@ -137,12 +136,11 @@ def make_prop_dist_figs(dir:str, df:pd.DataFrame):
                 areas[last_category_name].append(size / (512**2) * 100)
             else:
                 areas[last_category_name] = [size / (512**2) * 100]
-            size = 0
+            size = now_size
             last_image_id = row.image_id
             last_category_name = row.category_name
-    if size != 0:
-        areas[row.category_name].append(size / (512**2) * 100)
-        
+    areas[row.category_name].append(size / (512**2) * 100)
+    
     for area in areas.keys():
         fig = px.histogram(areas[area], labels = {"value" : "proportion(%)"}, title = area)
         fig.update_layout(
