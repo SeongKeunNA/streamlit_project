@@ -30,13 +30,26 @@ with st.sidebar:
         
 
     img_ids_paths = get_img_paths(ROOTDIR, selected_mode)
+    st.info('하나라도 선택된 카테고리가 들어가있으면 그 이미지가 리스트에 들어갑니다', icon="ℹ️")
+    showed_cls = st.multiselect(label='없음', options=CLASS_NAMES, label_visibility='collapsed', default=CLASS_NAMES)
+    
+    if st.session_state.filtering:
+        button_text = '미적용'
+    else:
+        button_text = '적용'
+    st.button(label=button_text, on_click=filter_mode_change)
+    
+    if st.session_state.filtering:
+        img_ids_paths = class_filtering(ROOTDIR, selected_mode, img_ids_paths, showed_cls)
+        
+    
     
     img_id_path = st.radio(
         label="사진 선택",
         options=get_current_page_list(
             img_ids_paths, st.session_state.page, ELEMENTS_PER_PAGE
         ),
-        format_func=lambda x: f"{x[1].split('/')[-1]}",
+        format_func=lambda x: f"{x[1].split('/')[-2:]}",
     )
     
     img_id, img_path = img_id_path
