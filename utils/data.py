@@ -10,6 +10,19 @@ import pickle
 import csv
 csv.field_size_limit(sys.maxsize)
 
+CLASS_NAMES = [
+    "General trash",
+    "Paper",
+    "Paper pack",
+    "Metal",
+    "Glass",
+    "Plastic",
+    "Styrofoam",
+    "Plastic bag",
+    "Battery",
+    "Clothing",
+]
+
 CLASS_COLOR = [
     [1., 222/255, 1.],
     [222/255, 222/255, 1.],
@@ -79,6 +92,8 @@ def set_session():
         st.session_state.page = 0
     if "mode" not in st.session_state:
         st.session_state.mode = 'train'
+    if "filtering" not in st.session_state:
+        st.session_state.filtering = False
 
 
 def get_mode():
@@ -422,4 +437,20 @@ def load_submission_dict(submission_path: str) -> dict:
         output_dict = submission_to_dict(submission_path)
         save_pkl(cache_file_path, output_dict)
         return load_submission_dict(submission_path)
-        
+
+@st.experimental_memo
+def class_filtering(coco_path: str, mode: str, img_ids_paths:list, showed_cls: list):
+    filtered_list = []
+    data = _get_coco_data(coco_path, mode)
+    for (id, path) in img_ids_paths:
+        annos = data.getAnnIds(id)
+        infos = data.loadAnns(annos) 
+        for info in infos:
+            if CLASS_NAMES[info['category_id']-1] in showed_cls:
+                filtered_list.append((id, path))
+                break
+    return filtered_list
+
+
+def filter_mode_change():
+    st.session_state.filtering = not st.session_state.filtering
