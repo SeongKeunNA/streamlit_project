@@ -6,6 +6,7 @@ from time import time
 
 from utils.data import *
 from utils.aug import *
+import re
 
 ROOTDIR = "data/trash"
 SUBMISSIONS_ROOT_DIR = os.path.join(ROOTDIR, "submissions")
@@ -71,7 +72,7 @@ if selected_mode == "test":
     base_img = cv2.resize(base_img, (256,256))
     submission_path = os.path.join(SUBMISSIONS_ROOT_DIR, submission_filename)
     mask_dict = load_submission_dict(submission_path)
-    submission_index = "/".join(img_path.split("/")[2:])
+    submission_index = "/".join(re.split('/|\\\\', img_path)[2:])
     valid_category = get_submission_category(mask_dict[submission_index])
     check = make_checkbox(valid_category)
     mask_img = get_submission_img(mask_dict[submission_index], check)
