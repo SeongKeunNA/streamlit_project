@@ -1,14 +1,18 @@
-import streamlit as st
 import os
-import cv2
 from math import ceil
 from time import time
 
-from utils.data import *
+import cv2
+import streamlit as st
 from utils.aug import *
+from utils.data import *
 
-ROOTDIR = "data/trash"
-SUBMISSIONS_ROOT_DIR = os.path.join(ROOTDIR, "submissions")
+ROOTDIR = "/opt/ml/input/data/"
+
+SUBMISSIONS_ROOT_DIR = os.path.join(ROOTDIR, "submission")
+SUBMISSIONS_ROOT_DIR = os.path.join("/opt/ml/segmentation/Mask2Former/", "submission")
+
+
 ELEMENTS_PER_PAGE = 10
 
 st.set_page_config(page_title="Segmentation Viewer", page_icon="✂️")
@@ -22,8 +26,10 @@ with st.sidebar:
     )
 
     if selected_mode == "test":
-        submission_filename = st.selectbox(label="select_submission", options=get_submission_csv(SUBMISSIONS_ROOT_DIR))
-        
+        submission_filename = st.selectbox(
+            label="select_submission", options=get_submission_csv(SUBMISSIONS_ROOT_DIR)
+        )
+
     img_ids_paths = get_img_paths(ROOTDIR, selected_mode)
 
     img_id_path = st.radio(
@@ -49,10 +55,10 @@ base_img = cv2.imread(img_path)
 base_img = cv2.cvtColor(base_img, cv2.COLOR_BGR2RGB)
 
 if selected_mode == "test":
-    base_img = cv2.resize(base_img, (256,256))
+    base_img = cv2.resize(base_img, (256, 256))
     submission_path = os.path.join(SUBMISSIONS_ROOT_DIR, submission_filename)
     mask_dict = load_submission_dict(submission_path)
-    submission_index = "/".join(img_path.split("/")[2:])
+    submission_index = "/".join(img_path.split("/")[-2:])
     mask_img = label_to_color_image(mask_dict[submission_index])
 else:
     mask_img = get_coco_img(ROOTDIR, selected_mode, img_id, check)
@@ -69,6 +75,54 @@ with col2:
 
 with col3:
     show_img(overlay_img)
+
+from annotated_text import annotation
+
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1:
+    st.markdown(
+        annotation("General trash", background="#c00080", color="black"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        annotation("Paper", background="#0080c0", color="black"), unsafe_allow_html=True
+    )
+
+with col2:
+    st.markdown(
+        annotation("Paper pack", background="#008040", color="black"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        annotation("Metal", background="#800000", color="black"), unsafe_allow_html=True
+    )
+
+with col3:
+    st.markdown(
+        annotation("Glass", background="#400080", color="black"), unsafe_allow_html=True
+    )
+    st.markdown(
+        annotation("Plastic", background="#4000c0", color="black"),
+        unsafe_allow_html=True,
+    )
+with col4:
+    st.markdown(
+        annotation("Styrofoam", background="#c0c040", color="black"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        annotation("Plastic bag", background="#c0c080", color="black"),
+        unsafe_allow_html=True,
+    )
+with col5:
+    st.markdown(
+        annotation("Battery", background="#404080", color="black"),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        annotation("Clothing", background="#8000c0", color="black"),
+        unsafe_allow_html=True,
+    )
 
 
 end_time = time()
