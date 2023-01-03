@@ -56,7 +56,7 @@ CLASS_COLOR = [
 ]
 
 
-def get_listdir(dir_path: str) -> list:
+def get_listdir(dir_path: str) -> List[str]:
     """root 하위 파일, 폴더 리스트 반환
 
     Args:
@@ -87,8 +87,8 @@ def show_img(img: np.ndarray) -> None:
 
 
 def get_current_page_list(
-    img_paths: list, page: int = 0, ele_per_page: int = 10
-) -> list:
+    img_paths: List[str], page: int = 0, ele_per_page: int = 10
+) -> List[str]:
     """현재 페이지에 해당하는 img path들을 반환
 
     Args:
@@ -139,7 +139,7 @@ def move_page(page: int):
 
 
 @st.experimental_memo
-def get_img_paths(coco_path: str, mode: str) -> list:
+def get_img_paths(coco_path: str, mode: str) -> List[str]:
     """img, id 를 튜플로 담은 리스트를 반환
 
     Args:
@@ -279,7 +279,7 @@ def label_to_color_image(label: np.array):
 # def set_class_checkbox(check: list[bool]):
 
 
-def get_submission_img(mask: np.ndarray, check: list) -> np.ndarray:
+def get_submission_img(mask: np.ndarray, check: List[bool]) -> np.ndarray:
     """check에서 선택된 category만 mask image로 변환하여 리턴
 def get_submission_img(mask: np.ndarray, check: list) -> np.ndarray:
     '''check에서 선택된 category만 mask image로 변환하여 리턴
@@ -296,7 +296,7 @@ def get_submission_img(mask: np.ndarray, check: list) -> np.ndarray:
 
 
 @st.experimental_singleton
-def get_coco_img(coco_path: str, mode: str, id: int, check: list):
+def get_coco_img(coco_path: str, mode: str, id: int, check: List[bool]):
     """make mask image
 
     Args:
@@ -326,7 +326,7 @@ def get_coco_img(coco_path: str, mode: str, id: int, check: list):
     return mask
 
 
-def get_submission_category(mask: np.ndarray) -> list:
+def get_submission_category(mask: np.ndarray) -> List[bool]:
     """submission mask data에 포함된 category list
     Args:
         mask (np.ndarray): mask data
@@ -343,7 +343,7 @@ def get_submission_category(mask: np.ndarray) -> list:
 
 
 @st.experimental_singleton
-def get_coco_category(coco_path: str, mode: str, id: int) -> list:
+def get_coco_category(coco_path: str, mode: str, id: int) -> List[bool]:
     """선택된 이미지에(베이스 이미지) 대하여 활성화 되어있는 category를 구함
 
     Args:
@@ -474,7 +474,7 @@ def load_submission_dict(submission_path: str) -> dict:
 
 
 @st.experimental_memo
-def class_filtering(coco_path: str, mode: str, img_ids_paths: list, showed_cls: list):
+def class_filtering(coco_path: str, mode: str, img_ids_paths: list, showed_cls: list) -> List[tuple]:
     filtered_list = []
     data = _get_coco_data(coco_path, mode)
     for (id, path) in img_ids_paths:
