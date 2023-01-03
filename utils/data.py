@@ -11,6 +11,21 @@ import streamlit as st
 from pycocotools.coco import COCO
 
 csv.field_size_limit(sys.maxsize)
+import cv2
+import sys
+import pickle
+import csv
+maxInt = sys.maxsize
+
+while True:
+    # decrease the maxInt value by factor 10 
+    # as long as the OverflowError occurs.
+
+    try:
+        csv.field_size_limit(maxInt)
+        break
+    except OverflowError:
+        maxInt = int(maxInt/10)
 
 CLASS_NAMES = [
     "General trash",
@@ -71,7 +86,7 @@ def show_img(img: np.ndarray) -> None:
 
 def get_current_page_list(
     img_paths: list, page: int = 0, ele_per_page: int = 10
-) -> list[str]:
+) -> list:
     """현재 페이지에 해당하는 img path들을 반환
 
     Args:
@@ -262,8 +277,10 @@ def label_to_color_image(label: np.array):
 # def set_class_checkbox(check: list[bool]):
 
 
-def get_submission_img(mask: np.ndarray, check: list[bool]) -> np.ndarray:
+def get_submission_img(mask: np.ndarray, check: list) -> np.ndarray:
     """check에서 선택된 category만 mask image로 변환하여 리턴
+def get_submission_img(mask: np.ndarray, check: list) -> np.ndarray:
+    '''check에서 선택된 category만 mask image로 변환하여 리턴
     Args:
         mask (np.ndarray): mask data
         check (list): mask image로 변환할 category
@@ -277,7 +294,7 @@ def get_submission_img(mask: np.ndarray, check: list[bool]) -> np.ndarray:
 
 
 @st.experimental_singleton
-def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
+def get_coco_img(coco_path: str, mode: str, id: int, check: list):
     """make mask image
 
     Args:
@@ -372,7 +389,7 @@ def erase_image(coco_path: str, img_id: int):
         f.write(str(img_id) + "\n")
 
 
-def make_checkbox(valid_category: list[int]):
+def make_checkbox(valid_category: list):
     """각 카테고리에 대한 checkbox 생성
     Args:
         valid_category (list[int]): class_id list

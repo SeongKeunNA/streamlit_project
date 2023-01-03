@@ -14,5 +14,5 @@
   - [x] albumentation
   - [x] print augmentation speed
 - [ ] data distribution
-- [ ] test 데이터셋에 대해 결과 보는 기능
+- [x] visualize submission.csv
 - [ ] 
