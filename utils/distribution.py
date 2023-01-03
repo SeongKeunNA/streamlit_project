@@ -109,8 +109,8 @@ def make_dist_figs(dir:str, category:str):
         make_color_dist_figs(dir, df)
     elif category == "Class number distribution":
         make_class_dist_figs(dir, df)
-    elif category == "Class number per image distribution":
-        make_class_per_img_dist_figs(dir, df)
+    elif category == "Object number per image distribution":
+        make_object_per_img_dist_figs(dir, df)
     
 
 def make_prop_dist_figs(dir:str, df:pd.DataFrame):
@@ -120,17 +120,50 @@ def make_prop_dist_figs(dir:str, df:pd.DataFrame):
         dir (str): distribution을 확인하려는 폴더 경로
         df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
     """
+    
+    df = df.sort_values(["image_id", "category_id"])
     areas = dict()
     fig_list = []
-    for row in df.itertuples():   
-        if row[3] in areas.keys():
-            areas[row[3]].append(row[5] / row[6] * 100)
-        else:
-            areas[row[3]] = [row[5] / row[6] * 100]
+    last_image_id = df.iloc[0,1]
+    last_category_name = df.iloc[0,2]
+    size = 0
+    for row in df.itertuples():
+        now_size = row.area
+        if row.image_id == last_image_id and row.category_name == last_category_name:
+            size += now_size
+        else:    
+            if last_category_name in areas.keys():
+                areas[last_category_name].append(size / (512**2) * 100)
+            else:
+                areas[last_category_name] = [size / (512**2) * 100]
+            size = now_size
+            last_image_id = row.image_id
+            last_category_name = row.category_name
+    areas[row.category_name].append(size / (512**2) * 100)
     
     for area in areas.keys():
-        fig = px.histogram(areas[area], labels = {"value" : "proportion"}, title = area)
-        fig.update_layout(showlegend=False)
+        fig = px.histogram(areas[area], labels = {"value" : "proportion(%)"}, title = area)
+        fig.update_layout(
+        title=dict(
+            text=f'<b>{area}</b>',
+            x=0.5,
+            y=0.87,
+            font=dict(
+                family="Arial",
+                size=40,
+                color="#000000"
+            )
+        ),
+        xaxis_title=dict(
+            text="<b>Total segmentation proportion per image(%)</b>"
+        ),
+        yaxis_title="<b>Count</b>",
+        font=dict(
+            size=12,
+        ),
+        showlegend=False,
+        margin = dict(l=10, r=10, b=10)
+    )
         fig_list.append(fig)
         
     with open(f"utils/distribution_plotly/{dir}_Segmentation proportion distribution", "wb") as fw:    
@@ -219,12 +252,35 @@ def make_class_dist_figs(dir:str, df:pd.DataFrame):
         dir (str): distribution을 확인하려는 폴더 경로
         df (pd.DataFrame) : coco format의 annotations들을 하나의 행으로 하는 데이터프레임
     """
-    figs = [px.histogram(df, x="category_name")] 
+    figs = []
+    fig = px.histogram(df, x="category_name")
+    fig.update_layout(
+    title=dict(
+        text='<b>Class number</b>',
+        x=0.5,
+        y=0.87,
+        font=dict(
+            family="Arial",
+            size=40,
+            color="#000000"
+        )
+    ),
+    xaxis_title=dict(
+        text="<b>Class name</b>"
+    ),
+    yaxis_title="<b>Count</b>",
+    font=dict(
+        size=12,
+    ),
+    showlegend=False,
+    margin = dict(l=10, r=10, b=10)
+)
+    figs.append(fig)
     with open(f"utils/distribution_plotly/{dir}_Class number distribution", "wb") as fw:    
          pickle.dump(figs, fw)
 
 
-def make_class_per_img_dist_figs(dir:str, df:pd.DataFrame):
+def make_object_per_img_dist_figs(dir:str, df:pd.DataFrame):
     """이미지 별 annotation 개수의 distribution 계산 및 저장
 
     Args:
@@ -235,7 +291,27 @@ def make_class_per_img_dist_figs(dir:str, df:pd.DataFrame):
     ann_nums_df = pd.DataFrame(pd.Series(ann_nums_dict)) 
     figs = []
     fig = px.histogram(pd.DataFrame(ann_nums_df))
-    fig.update_layout(showlegend=False)
+    fig.update_layout(
+    title=dict(
+        text='<b>Object number per image</b>',
+        x=0.5,
+        y=0.87,
+        font=dict(
+            family="Arial",
+            size=40,
+            color="#000000"
+        )
+    ),
+    xaxis_title=dict(
+        text="<b>Object number</b>"
+    ),
+    yaxis_title="<b>Count</b>",
+    font=dict(
+        size=12,
+    ),
+    showlegend=False,
+    margin = dict(l=10, r=10, b=10)
+)
     figs.append(fig)
-    with open(f"utils/distribution_plotly/{dir}_Class number per image distribution", "wb") as fw:    
+    with open(f"utils/distribution_plotly/{dir}_Object number per image distribution", "wb") as fw:    
          pickle.dump(figs, fw)

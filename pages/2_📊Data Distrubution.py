@@ -18,7 +18,7 @@ with st.sidebar:
     )
         
     selected_category = st.selectbox(
-        label="select category", options=["Segmentation proportion distribution", "Color distribution", "Class number distribution", "Class number per image distribution"]
+        label="select category", options=["Segmentation proportion distribution", "Color distribution", "Class number distribution", "Object number per image distribution"]
     )
     
 start_time = time()
