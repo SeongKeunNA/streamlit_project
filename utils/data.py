@@ -1,13 +1,15 @@
+import csv
 import os
+import pickle
+import sys
 from glob import glob
-import pandas as pd
+
+import cv2
 import numpy as np
+import pandas as pd
 import streamlit as st
 from pycocotools.coco import COCO
-import cv2
-import sys
-import pickle
-import csv
+
 csv.field_size_limit(sys.maxsize)
 
 CLASS_NAMES = [
@@ -24,16 +26,16 @@ CLASS_NAMES = [
 ]
 
 CLASS_COLOR = [
-    [1., 222/255, 1.],
-    [222/255, 222/255, 1.],
-    [1., 1., 222/255],
-    [222/255, 222/255, 239/255],
-    [222/255, 1., 1.],
-    [1., 222/255, 222/255],
-    [239/255, 222/255, 222/255],
-    [239/255, 222/255, 1.],
-    [222/255, 239/255, 239/255],
-    [222/255, 1., 222/255],
+    [1.0, 222 / 255, 1.0],
+    [222 / 255, 222 / 255, 1.0],
+    [1.0, 1.0, 222 / 255],
+    [222 / 255, 222 / 255, 239 / 255],
+    [222 / 255, 1.0, 1.0],
+    [1.0, 222 / 255, 222 / 255],
+    [239 / 255, 222 / 255, 222 / 255],
+    [239 / 255, 222 / 255, 1.0],
+    [222 / 255, 239 / 255, 239 / 255],
+    [222 / 255, 1.0, 222 / 255],
 ]
 
 
@@ -91,7 +93,7 @@ def set_session():
     if "page" not in st.session_state:
         st.session_state.page = 0
     if "mode" not in st.session_state:
-        st.session_state.mode = 'train'
+        st.session_state.mode = "train"
     if "filtering" not in st.session_state:
         st.session_state.filtering = False
 
@@ -102,6 +104,7 @@ def get_mode():
 
 def change_mode(mode: str):
     st.session_state.mode = mode
+
 
 def move_page(page: int):
     """원하는 페이지로 이동
@@ -138,6 +141,7 @@ def get_img_paths(coco_path: str, mode: str) -> list:
         )
     return img_ids_paths
 
+
 @st.experimental_singleton
 def _get_coco_data(coco_path: str, mode: str) -> COCO:
     """json path로 COCO 클래스 생성
@@ -153,16 +157,18 @@ def _get_coco_data(coco_path: str, mode: str) -> COCO:
     json_path = os.path.join(coco_path, f"{mode}.json")
     data = COCO(json_path)
     return data
-    
-    
+
+
 @st.experimental_singleton
 def get_labeld_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
     label = np.zeros(img.shape)
     data = _get_coco_data(coco_path, mode)
     annos = data.getAnnIds(imgIds=img_id)
-    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x['area'])
+    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x["area"])
     for idx in range(len(segmentations)):
-        label[data.annToMask(segmentations[idx]) == 1] = CLASS_COLOR[segmentations[idx]['category_id']]
+        label[data.annToMask(segmentations[idx]) == 1] = CLASS_COLOR[
+            segmentations[idx]["category_id"]
+        ]
     return label
 
 
@@ -171,9 +177,12 @@ def get_overlay_img(img, img_id: int, coco_path: str, mode: str) -> np.ndarray:
     label = np.zeros_like(img)
     data = _get_coco_data(coco_path, mode)
     annos = data.getAnnIds(imgIds=img_id)
-    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x['area'])
+    segmentations = sorted(data.loadAnns(annos), key=lambda x: -x["area"])
     for idx in range(len(segmentations)):
-        label[data.annToMask(segmentations[idx]) == 1] = np.array(np.array(CLASS_COLOR[segmentations[idx]['category_id']])*255, dtype=np.uint8)
+        label[data.annToMask(segmentations[idx]) == 1] = np.array(
+            np.array(CLASS_COLOR[segmentations[idx]["category_id"]]) * 255,
+            dtype=np.uint8,
+        )
     label = cv2.addWeighted(img, 0.5, label, 0.5, 0)
     return label
 
@@ -197,9 +206,9 @@ def get_color_map():
         "Battery",
         "Clothing",
     )
-    r = (0, 192, 0, 0, 128, 64, 64, 192, 192, 64, 128)
-    g = (0, 0, 128, 128, 0, 0, 0, 192, 192, 64, 0)
-    b = (0, 128, 192, 64, 0, 128, 192, 64, 128, 128, 192)
+    r = (166, 31, 178, 51, 251, 227, 253, 255, 202, 106)
+    g = (206, 120, 223, 160, 154, 26, 191, 127, 178, 61)
+    b = (227, 180, 138, 44, 0, 153, 28, 111, 0, 214, 154)
 
     df = pd.DataFrame()
     df["name"] = category_names
@@ -249,20 +258,23 @@ def label_to_color_image(label: np.array):
 
     return colormap[label]
 
+
 # def set_class_checkbox(check: list[bool]):
 
+
 def get_submission_img(mask: np.ndarray, check: list[bool]) -> np.ndarray:
-    '''check에서 선택된 category만 mask image로 변환하여 리턴
+    """check에서 선택된 category만 mask image로 변환하여 리턴
     Args:
         mask (np.ndarray): mask data
         check (list): mask image로 변환할 category
     Return:
         mask_image (np.ndarray): 선택된 category만 표현한 mask image
-    '''
+    """
     for idx, i in enumerate(check):
         if i == False:
-            mask[mask==idx] = 0
+            mask[mask == idx] = 0
     return label_to_color_image(mask)
+
 
 @st.experimental_singleton
 def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
@@ -294,21 +306,21 @@ def get_coco_img(coco_path: str, mode: str, id: int, check: list[bool]):
     mask = label_to_color_image(mask)
     return mask
 
+
 def get_submission_category(mask: np.ndarray) -> list:
-    '''submission mask data에 포함된 category list
+    """submission mask data에 포함된 category list
     Args:
         mask (np.ndarray): mask data
         category (list): mask data에 포함된 category list
     Return:
         output_dict (dict): test image별 mask data를 포함한 dict
-    '''
+    """
     cat_available = np.unique(mask)
     category = [0] * 11
     for i in cat_available:
         category[i] = 1
     category[0] = 0
     return category
-
 
 
 @st.experimental_singleton
@@ -391,26 +403,29 @@ def make_checkbox(valid_category: list[int]):
         return_list[idx] = check
     return return_list
 
+
 def load_pkl(path: str) -> any:
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         data = pickle.load(f)
         return data
 
+
 def save_pkl(path: str, data: any) -> None:
-    cache_file_path = path.split(".")[0] + '.pkl'
-    with open(cache_file_path, 'wb') as f:
-	    pickle.dump(data, f)
+    cache_file_path = path.split(".")[0] + ".pkl"
+    with open(cache_file_path, "wb") as f:
+        pickle.dump(data, f)
+
 
 def submission_to_dict(submission_path: str) -> dict:
-    '''submission.csv를 dict로 변환
+    """submission.csv를 dict로 변환
     Args:
         submission_path (str): submission.csv file path
     Return:
         output_dict (dict): test image별 mask data를 포함한 dict
-    '''
+    """
     output_dict = {}
     size = 256
-    with open(submission_path, mode='r') as file:
+    with open(submission_path, mode="r") as file:
         reader = csv.reader(file)
         attrs = []
         for row in reader:
@@ -424,13 +439,13 @@ def submission_to_dict(submission_path: str) -> dict:
 
 
 def load_submission_dict(submission_path: str) -> dict:
-    '''submission.csv에 포함된 mask data를 dict로 load, 최초 실행 시 dict를 pkl로 변환, 이후는 pkl load
+    """submission.csv에 포함된 mask data를 dict로 load, 최초 실행 시 dict를 pkl로 변환, 이후는 pkl load
     Args:
         submission_path (str): submission.csv file path
     Return:
         output_dict (dict): test image별 mask data를 포함한 dict
-    '''
-    cache_file_path = submission_path.split(".")[0] + '.pkl'
+    """
+    cache_file_path = submission_path.split(".")[0] + ".pkl"
     if os.path.isfile(cache_file_path):
         return load_pkl(cache_file_path)
     else:
@@ -438,15 +453,16 @@ def load_submission_dict(submission_path: str) -> dict:
         save_pkl(cache_file_path, output_dict)
         return load_submission_dict(submission_path)
 
+
 @st.experimental_memo
-def class_filtering(coco_path: str, mode: str, img_ids_paths:list, showed_cls: list):
+def class_filtering(coco_path: str, mode: str, img_ids_paths: list, showed_cls: list):
     filtered_list = []
     data = _get_coco_data(coco_path, mode)
     for (id, path) in img_ids_paths:
         annos = data.getAnnIds(id)
-        infos = data.loadAnns(annos) 
+        infos = data.loadAnns(annos)
         for info in infos:
-            if CLASS_NAMES[info['category_id']-1] in showed_cls:
+            if CLASS_NAMES[info["category_id"] - 1] in showed_cls:
                 filtered_list.append((id, path))
                 break
     return filtered_list
