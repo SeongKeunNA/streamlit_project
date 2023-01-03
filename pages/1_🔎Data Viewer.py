@@ -81,7 +81,7 @@ if selected_mode == "test":
     submission_index = "/".join(re.split('/|\\\\', img_path)[2:])
     valid_category = get_submission_category(mask_dict[submission_index])
     check = make_checkbox(valid_category)
-    mask_img = get_submission_img(mask_dict[img_path], check)
+    mask_img = get_submission_img(mask_dict[submission_index], check)
 else:
     valid_category = get_coco_category(ROOTDIR, selected_mode, img_id)
     check = make_checkbox(valid_category)
