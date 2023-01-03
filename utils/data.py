@@ -9,13 +9,15 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from pycocotools.coco import COCO
-
-csv.field_size_limit(sys.maxsize)
 import cv2
 import sys
 import pickle
 import csv
 maxInt = sys.maxsize
+
+from typing import List
+
+
 
 while True:
     # decrease the maxInt value by factor 10 
@@ -67,7 +69,7 @@ def get_listdir(dir_path: str) -> list:
     return dir_names
 
 
-def get_submission_csv(dir_path: str) -> list:
+def get_submission_csv(dir_path: str) -> List[str]:
     dir_names = []
     for dir_name in os.listdir(dir_path):
         if not dir_name.startswith(".") and dir_name.endswith(".csv"):
@@ -221,9 +223,9 @@ def get_color_map():
         "Battery",
         "Clothing",
     )
-    r = (166, 31, 178, 51, 251, 227, 253, 255, 202, 106)
-    g = (206, 120, 223, 160, 154, 26, 191, 127, 178, 61)
-    b = (227, 180, 138, 44, 0, 153, 28, 111, 0, 214, 154)
+    r = (0, 166, 31, 178, 51, 251, 227, 253, 255, 202, 106)
+    g = (0, 206, 120, 223, 160, 154, 26, 191, 127, 178, 61)
+    b = (0, 227, 180, 138, 44, 153, 28, 111, 0, 214, 154)
 
     df = pd.DataFrame()
     df["name"] = category_names
