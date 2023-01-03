@@ -102,51 +102,69 @@ with col3:
 
 from annotated_text import annotation
 
+label_colors = [0] * 10
+for idx, v in enumerate(check[1:]):
+    if v:
+        label_colors[idx] = 1
+
 col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
-    st.markdown(
-        annotation("General trash", background="#a6cee3", color="black"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        annotation("Paper", background="#1f78b4", color="black"), unsafe_allow_html=True
-    )
+    if label_colors[0]:
+        st.markdown(
+            annotation("General trash", background="#a6cee3", color="black"),
+            unsafe_allow_html=True,
+        )
+    if label_colors[1]:
+        st.markdown(
+            annotation("Paper", background="#1f78b4", color="black"),
+            unsafe_allow_html=True,
+        )
 
 with col2:
-    st.markdown(
-        annotation("Paper pack", background="#b2df8a", color="black"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        annotation("Metal", background="#33a02c", color="black"), unsafe_allow_html=True
-    )
+    if label_colors[2]:
+        st.markdown(
+            annotation("Paper pack", background="#b2df8a", color="black"),
+            unsafe_allow_html=True,
+        )
+    if label_colors[3]:
+        st.markdown(
+            annotation("Metal", background="#33a02c", color="black"),
+            unsafe_allow_html=True,
+        )
 
 with col3:
-    st.markdown(
-        annotation("Glass", background="#fb9a99", color="black"), unsafe_allow_html=True
-    )
-    st.markdown(
-        annotation("Plastic", background="#e31a1c", color="black"),
-        unsafe_allow_html=True,
-    )
+    if label_colors[4]:
+        st.markdown(
+            annotation("Glass", background="#fb9a99", color="black"),
+            unsafe_allow_html=True,
+        )
+    if label_colors[5]:
+        st.markdown(
+            annotation("Plastic", background="#e31a1c", color="black"),
+            unsafe_allow_html=True,
+        )
 with col4:
-    st.markdown(
-        annotation("Styrofoam", background="#fdbf6f", color="black"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        annotation("Plastic bag", background="#ff7f00", color="black"),
-        unsafe_allow_html=True,
-    )
+    if label_colors[6]:
+        st.markdown(
+            annotation("Styrofoam", background="#fdbf6f", color="black"),
+            unsafe_allow_html=True,
+        )
+    if label_colors[7]:
+        st.markdown(
+            annotation("Plastic bag", background="#ff7f00", color="black"),
+            unsafe_allow_html=True,
+        )
 with col5:
-    st.markdown(
-        annotation("Battery", background="#cab2d6", color="black"),
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        annotation("Clothing", background="#6a3d9a", color="black"),
-        unsafe_allow_html=True,
-    )
+    if label_colors[8]:
+        st.markdown(
+            annotation("Battery", background="#cab2d6", color="black"),
+            unsafe_allow_html=True,
+        )
+    if label_colors[9]:
+        st.markdown(
+            annotation("Clothing", background="#6a3d9a", color="black"),
+            unsafe_allow_html=True,
+        )
 
 
 end_time = time()
