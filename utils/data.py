@@ -6,19 +6,6 @@ import numpy as np
 import streamlit as st
 from pycocotools.coco import COCO
 
-
-def get_data_folders(dir_path: str) -> list:
-    """root 하위 폴더 리스트 반환
-    Args:
-        dir_path (str): root folder name
-    """
-    dir_names = []
-    for dir_name in os.listdir(dir_path):   # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
-        if not dir_name.startswith('.'):    # hidden file들은 제외합니다
-            dir_names.append(dir_name)
-    return dir_names
-
-
 def show_img(img: np.ndarray) -> None:
     """이미지 streamlit에 출력
 
@@ -105,3 +92,14 @@ def _get_coco_data(coco_path: str, mode: str) -> COCO:
 def get_labeld_img(img: np.ndarray, img_id: int, data: COCO) -> np.ndarray:
     
     pass
+
+def get_data_folders(dir_path: str) -> list:
+    """root 하위 폴더 리스트 반환
+    Args:
+        dir_path (str): root folder name
+    """
+    dir_names = []
+    for dir_name in os.listdir(dir_path):   # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
+        if not dir_name.startswith('.'):    # hidden file들은 제외합니다
+            dir_names.append(dir_name)
+    return dir_names
