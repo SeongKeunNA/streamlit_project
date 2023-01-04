@@ -9,7 +9,6 @@ from pycocotools.coco import COCO
 
 def get_data_folders(dir_path: str) -> list:
     """root 하위 폴더 리스트 반환
-
     Args:
         dir_path (str): root folder name
     """
