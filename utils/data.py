@@ -74,6 +74,7 @@ def get_submission_csv(dir_path: str) -> List[str]:
     for dir_name in os.listdir(dir_path):
         if not dir_name.startswith(".") and dir_name.endswith(".csv"):
             dir_names.append(dir_name)
+            dir_names.sort()
     return dir_names
 
 
