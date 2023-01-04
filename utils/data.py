@@ -490,3 +490,14 @@ def class_filtering(coco_path: str, mode: str, img_ids_paths: list, showed_cls: 
 
 def filter_mode_change():
     st.session_state.filtering = not st.session_state.filtering
+
+def get_data_folders(dir_path: str) -> list:
+    """root 하위 폴더 리스트 반환
+    Args:
+        dir_path (str): root folder name
+    """
+    dir_names = []
+    for dir_name in os.listdir(dir_path):   # 터미널 실행 위치 기준으로 폴더 상대경로를 지정해야 합니다
+        if not dir_name.startswith('.'):    # hidden file들은 제외합니다
+            dir_names.append(dir_name)
+    return dir_names
