@@ -9,25 +9,21 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from pycocotools.coco import COCO
-import cv2
-import sys
-import pickle
-import csv
+
 maxInt = sys.maxsize
 
+import re
 from typing import List
 
-
-
 while True:
-    # decrease the maxInt value by factor 10 
+    # decrease the maxInt value by factor 10
     # as long as the OverflowError occurs.
 
     try:
         csv.field_size_limit(maxInt)
         break
     except OverflowError:
-        maxInt = int(maxInt/10)
+        maxInt = int(maxInt / 10)
 
 CLASS_NAMES = [
     "General trash",
@@ -69,12 +65,22 @@ def get_listdir(dir_path: str) -> List[str]:
     return dir_names
 
 
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+
+def natural_keys(text):
+    return [atoi(c) for c in re.split(r"(\d+)", text)]
+
+
 def get_submission_csv(dir_path: str) -> List[str]:
     dir_names = []
     for dir_name in os.listdir(dir_path):
         if not dir_name.startswith(".") and dir_name.endswith(".csv"):
             dir_names.append(dir_name)
-            dir_names.sort()
+
+            dir_names.sort(key=natural_keys)
+
     return dir_names
 
 
@@ -282,13 +288,11 @@ def label_to_color_image(label: np.array):
 
 def get_submission_img(mask: np.ndarray, check: List[bool]) -> np.ndarray:
     """check에서 선택된 category만 mask image로 변환하여 리턴
-def get_submission_img(mask: np.ndarray, check: list) -> np.ndarray:
-    '''check에서 선택된 category만 mask image로 변환하여 리턴
-    Args:
-        mask (np.ndarray): mask data
-        check (list): mask image로 변환할 category
-    Return:
-        mask_image (np.ndarray): 선택된 category만 표현한 mask image
+        Args:
+            mask (np.ndarray): mask data
+            check (list): mask image로 변환할 category
+        Return:
+            mask_image (np.ndarray): 선택된 category만 표현한 mask image
     """
     for idx, i in enumerate(check):
         if i == False:
@@ -475,7 +479,9 @@ def load_submission_dict(submission_path: str) -> dict:
 
 
 @st.experimental_memo
-def class_filtering(coco_path: str, mode: str, img_ids_paths: list, showed_cls: list) -> List[tuple]:
+def class_filtering(
+    coco_path: str, mode: str, img_ids_paths: list, showed_cls: list
+) -> List[tuple]:
     filtered_list = []
     data = _get_coco_data(coco_path, mode)
     for (id, path) in img_ids_paths:
