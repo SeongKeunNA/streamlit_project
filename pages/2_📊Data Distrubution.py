@@ -13,9 +13,7 @@ st.set_page_config(page_title="Data Distrubution") #,page_icon="📊")
 st.title("Data Distribution")
 
 with st.sidebar:
-    selected_dir = st.selectbox(
-        label="select folder", options=get_data_folders(ROOTDIR)
-    )
+    selected_dir = "trash"
         
     selected_category = st.selectbox(
         label="select category", options=["Segmentation proportion distribution", "Color distribution", "Class number distribution", "Object number per image distribution"]
