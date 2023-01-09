@@ -1,18 +1,17 @@
 # streamlit_project
 
 ### TODO
-- [ ] data viewer
-  - [ ] page function
+- [x] data viewer
+  - [x] page function
   - [x] radio select
-  - [ ] input page number
-- [ ] annotation viewer(segmentation)
-  - [ ] choose class
-  - [ ] use different color in each class
-  - [ ] 선택된 클래스 강조
-  - [ ] annotation 변경
+  - [x] input page number
+- [x] annotation viewer(segmentation)
+  - [x] choose class
+  - [x] use different color in each class
+  - [x] 선택된 클래스 강조
+  - [x] annotation 변경
 - [x] augmentation viewer
   - [x] albumentation
   - [x] print augmentation speed
-- [ ] data distribution
+- [x] data distribution
 - [x] visualize submission.csv
-- [ ] 
